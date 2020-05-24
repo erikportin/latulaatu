@@ -1,1 +1,5 @@
 # latulaatu
+
+
+firebase init
+

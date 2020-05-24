@@ -1,0 +1,7 @@
+{
+  "name": "latulaatu",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

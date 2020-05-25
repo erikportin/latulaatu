@@ -1,20 +1,53 @@
 import {IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonText, IonButton} from '@ionic/react';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './Venue.css';
+import {RouteComponentProps} from "react-router";
+import {getVenue, addRating, VENUE} from "../utils/db";
 
-const Venue: React.FC = () => {
-  return (
-    <IonPage>
-        <IonContent fullscreen className="content">
-            <h1>Elljusspåret - Nykarleby</h1>
-            <section>
-                <IonButton color="danger">Dålig</IonButton>
-                <IonButton color="warning">Okej</IonButton>
-                <IonButton color="success">Bra</IonButton>
-            </section>
-        </IonContent>
-    </IonPage>
-  );
+interface UserDetailPageProps extends RouteComponentProps<{
+    id: string;
+}> {}
+
+const Venue: React.FC<UserDetailPageProps> = ({match}) => {
+    const [venue, setVenue] = useState<VENUE | null>(null);
+    const venueId = match.params.id;
+    useEffect(() => {
+        async function fetch(){
+            const venue = await getVenue(venueId);
+            setVenue(venue)
+        }
+
+        fetch()
+    }, [])
+    
+    async function vote(score: number){
+        const venue = await addRating(venueId, score);
+        setVenue(venue)
+    }
+    
+    return (
+        <IonPage>
+            <IonContent fullscreen className="content">
+                {venue &&
+                    <>
+                        <h1>{venue.name}</h1>
+                        <p>Rating: {venue.rating.reduce((acc, {score}) => acc + score, 0)}</p>
+                        <section>
+                            <IonButton color="danger" onClick={() => {
+                                vote(0)
+                            }}>Dålig</IonButton>
+                            <IonButton color="warning" onClick={() => {
+                                vote(3)
+                            }}>Okej</IonButton>
+                            <IonButton color="success" onClick={() => {
+                                vote(5)
+                            }}>Bra</IonButton>
+                        </section>
+                    </>
+                }
+            </IonContent>
+        </IonPage>
+    );
 };
 
 export default Venue;

@@ -1,4 +1,4 @@
-import {IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonText, IonButton} from '@ionic/react';
+import {IonContent, IonPage, IonButton} from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import './Venue.css';
 import {RouteComponentProps} from "react-router";
@@ -16,9 +16,8 @@ const Venue: React.FC<UserDetailPageProps> = ({match}) => {
             const venue = await getVenue(venueId);
             setVenue(venue)
         }
-
         fetch()
-    }, [])
+    }, [venueId]);
     
     async function vote(score: number){
         const venue = await addRating(venueId, score);
@@ -27,7 +26,7 @@ const Venue: React.FC<UserDetailPageProps> = ({match}) => {
     
     return (
         <IonPage>
-            <IonContent fullscreen className="content">
+            <IonContent className="content">
                 {venue &&
                     <>
                         <h1>{venue.name}</h1>

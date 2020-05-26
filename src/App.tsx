@@ -23,6 +23,7 @@ import '@ionic/react/css/display.css';
 import './theme/variables.css';
 import Venues from "./pages/Venues";
 import Venue from './pages/Venue';
+import AddVenue from "./pages/AddVenue";
 
 const App: React.FC = () => (
   <IonApp>
@@ -30,6 +31,7 @@ const App: React.FC = () => (
       <IonRouterOutlet>
         <Route path="/venue/:id" component={Venue} exact={true} />
         <Route path="/venues" component={Venues} exact={true} />
+        <Route path="/add-venue" component={AddVenue} exact={true} />
         <Route exact path="/" render={() => <Redirect to="/venues" />} />
       </IonRouterOutlet>
     </IonReactRouter>

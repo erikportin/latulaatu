@@ -25,8 +25,9 @@ export interface RATING {
 }
 
 interface FIREBASE_VENUE {
-    name: string
-    rating: RATING[]
+    name: string;
+    rating: RATING[];
+    location: firebase.firestore.GeoPoint
 }
 
 export interface VENUE extends FIREBASE_VENUE{

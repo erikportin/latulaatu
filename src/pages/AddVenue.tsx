@@ -167,7 +167,7 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                             })
                         }
                     }, {
-                        text: 'Cancel',
+                        text: 'Stäng',
                         icon: close,
                         role: 'cancel',
                         handler: () => {
@@ -176,7 +176,6 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                                 latLng: undefined,
                                 showAddView: false
                             })
-                            console.log('Cancel clicked');
                         }
                     }]}
                 >

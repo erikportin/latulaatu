@@ -1,4 +1,5 @@
 import * as firebase from "firebase";
+import {POSITION} from "../components/Map/MapRenderer";
 
 // Initialize Cloud Firestore through Firebase
 firebase.initializeApp({
@@ -71,10 +72,11 @@ export async function addRating(id: string, score: number): Promise<VENUE>{
     return getVenue(id)
 }
 
-export async function addVenue(name: string): Promise<VENUE>{
+export async function addVenue(name: string, latLng: POSITION): Promise<VENUE>{
     const doc = await db.collection(Collection.VENUES).add({
         name,
-        rating: []
+        rating: [],
+        location: new firebase.firestore.GeoPoint(latLng.lat, latLng.lng)
     });
 
     return getVenue(doc.id)

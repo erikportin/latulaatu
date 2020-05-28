@@ -1,6 +1,6 @@
 {
   "appId": "io.ionic.starter",
-  "appName": "latulaatu",
+  "appName": "Latulaatu",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "build",
@@ -8,6 +8,9 @@
     "SplashScreen": {
       "launchShowDuration": 0
     }
+  },
+  "server": {
+    "url": "https://latulaatu.web.app"
   },
   "cordova": {}
 }

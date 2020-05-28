@@ -27,6 +27,7 @@ const Venue: React.FC<UserDetailPageProps> = ({match}) => {
     return (
         <IonPage>
             <IonContent className="content">
+                <IonButton routerLink={`/venues`}>Tillbaka till startsidan</IonButton>
                 {venue &&
                     <>
                         <h1>{venue.name}</h1>

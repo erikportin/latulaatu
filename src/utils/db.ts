@@ -1,5 +1,6 @@
 import * as firebase from "firebase";
 import {POSITION} from "../components/Map/MapRenderer";
+import {toPositionFromFirebaseGeoPoint} from "./map";
 
 // Initialize Cloud Firestore through Firebase
 firebase.initializeApp({
@@ -30,7 +31,10 @@ interface FIREBASE_VENUE {
     location: firebase.firestore.GeoPoint
 }
 
-export interface VENUE extends FIREBASE_VENUE{
+export interface VENUE{
+    name: string;
+    rating: RATING[];
+    location: POSITION;
     id: string
 }
 
@@ -43,6 +47,7 @@ export async function getVenues(): Promise<VENUE[]>{
         const data = doc.data() as FIREBASE_VENUE;
         venues.push({
             ...data,
+            location: toPositionFromFirebaseGeoPoint(data.location),
             id: doc.id
         })
     });
@@ -56,6 +61,7 @@ export async function getVenue(id: string): Promise<VENUE>{
 
     return {
         ...data,
+        location: toPositionFromFirebaseGeoPoint(data.location),
         id: snapshot.id
     };
 }

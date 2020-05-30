@@ -4,7 +4,7 @@ import {
     IonButton,
     IonList,
     IonItem,
-    IonLabel, IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab
+    IonLabel, IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab, IonNote
 } from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import './Venue.css';
@@ -21,8 +21,12 @@ import {
     pulseOutline, addOutline
 } from "ionicons/icons";
 import Map from "../components/Map/Map";
+import {RouteComponentProps} from "react-router";
+interface PageProps extends RouteComponentProps<{
+    history: string;
+}> {}
 
-interface VENUE_WITH_DISTANCE {
+export interface VENUE_WITH_DISTANCE {
     id: string;
     name: string;
     rating: RATING[];
@@ -33,13 +37,11 @@ interface VENUE_WITH_DISTANCE {
 function sortVenuesByDistanceVenues(venues: VENUE[] = [], currentPosition: POSITION): VENUE_WITH_DISTANCE[]{
     return venues
         .map(venue => {
-            const location = toPositionFromFirebaseGeoPoint(venue.location);
             return {
                 ...venue,
-                location,
                 distance: distance(
                     currentPosition,
-                    toPositionFromFirebaseGeoPoint(venue.location)
+                    venue.location
                 )
             }
         })
@@ -52,19 +54,29 @@ enum SEARCHING_FOR_POSITION {
     FAILED = 'failed',
 }
 
-interface VIEW {
-    venues: VENUE_WITH_DISTANCE[];
-    searchingForPosition: SEARCHING_FOR_POSITION
-    currentPosition?: POSITION;
-    currentVenue?: VENUE_WITH_DISTANCE | undefined;
-    showActionSheet: boolean
+enum ACTIONSHEET_TYPE {
+    MULTIPLE_VENUES = 'multiple venues',
+    NO_VENUE = 'no venue'
 }
 
-const Venues: React.FC = () => {
+enum USER_ACTION {
+    SHOW_VENUES = 'show venues'
+}
+
+interface VIEW {
+    venues: VENUE_WITH_DISTANCE[];
+    nearbyVenues: VENUE_WITH_DISTANCE[];
+    searchingForPosition: SEARCHING_FOR_POSITION
+    currentPosition?: POSITION;
+    actionSheetType: ACTIONSHEET_TYPE | undefined;
+}
+
+const Venues: React.FC<PageProps> = ({ history }) => {
     const [view, setView] = useState<VIEW>({
         venues: [],
+        nearbyVenues: [],
         searchingForPosition: SEARCHING_FOR_POSITION.SEARCHING,
-        showActionSheet: false
+        actionSheetType: undefined
     });
 
     useEffect(() => {
@@ -73,18 +85,24 @@ const Venues: React.FC = () => {
                 const currentPosition = toPositionFromGeoposition(await Geolocation.getCurrentPosition());
                 const venues = await getVenues();
                 const sortedVenues = sortVenuesByDistanceVenues(venues, currentPosition);
-                let currentVenue = undefined;
-                let showActionSheet = false;
-                if(sortedVenues[0] && sortedVenues[0].distance < 1){
-                    currentVenue = sortedVenues[0];
-                    showActionSheet = true;
+                const nearbyVenues = sortedVenues.filter(venue => venue.distance < 1);
+
+                let actionSheetType = ACTIONSHEET_TYPE.NO_VENUE;
+                if(nearbyVenues.length === 1){
+                    history.push(`/venue/${nearbyVenues[0].id}?rate=true`)
+                } else if(nearbyVenues.length > 1){
+                    actionSheetType = ACTIONSHEET_TYPE.MULTIPLE_VENUES
                 }
+
+                console.log("nearbyVenues", nearbyVenues)
+                console.log("actionSheetType", actionSheetType)
+
                 setView({
                     venues: sortedVenues,
+                    nearbyVenues,
                     currentPosition,
-                    currentVenue,
                     searchingForPosition: SEARCHING_FOR_POSITION.SUCCESS,
-                    showActionSheet
+                    actionSheetType
                 })
 
             } catch(error){
@@ -99,21 +117,9 @@ const Venues: React.FC = () => {
         fetch()
     }, [])
 
-    async function vote(id: string | undefined, score: number){
-        if(id){
-            const { rating } = await addRating(id, score);
-            const prevVenue =  view.currentVenue;
-            if(prevVenue){
-                setView({
-                    ...view,
-                    currentVenue: {
-                        ...prevVenue,
-                        rating
-                    }
-                })
-            }
-        }
-    }
+    useEffect(() => {
+        console.log("view", view)
+    }, [view])
 
     return (
         <IonPage>
@@ -123,54 +129,47 @@ const Venues: React.FC = () => {
                     message={'Söker skidspår'}
                     duration={5000}
                 />
-                {view.currentVenue && <>
-                    <h1>{view.currentVenue.name}</h1>
-                    {view.showActionSheet && <h2>Hur var spåren idag?</h2>}
-                    {!view.showActionSheet && <h2>Betyg: {view.currentVenue.rating.reduce((abbr, {score}) => score + abbr, 0)}</h2>}
-                    <Map position={view.currentVenue.location} />
-                </>}
-                {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.showActionSheet && <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton href={'/add-venue'}>
-                        <IonIcon icon={addOutline} />
-                    </IonFabButton>
-                </IonFab>}
+                <h1>Skidspår</h1>
+                {view.venues.length > 0 && view.actionSheetType === undefined && <IonList>
+                    {view.venues.map(({name, id, distance}, index) => <IonItem key={index} href={`/venue/${id}`}>
+                        <IonLabel>{name}</IonLabel>
+                        <IonNote slot="end" color="primary">{`${Math.round(distance)}km`}</IonNote>
+                    </IonItem>)}
+                </IonList>}
+                {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.actionSheetType &&
+                    <IonFab vertical="bottom" horizontal="end" slot="fixed">
+                        <IonFabButton href={'/add-venue'}>
+                            <IonIcon icon={addOutline} />
+                        </IonFabButton>
+                    </IonFab>
+                }
             </IonContent>
+
+            {/* MULTIPLE VENUES */}
             <IonActionSheet
-                isOpen={view.showActionSheet}
-                onDidDismiss={() => setView({
-                    ...view,
-                    showActionSheet: false
-                })}
+                header={'Flera skidspår hittade i din närheten. Välj ett.'}
+                isOpen={view.actionSheetType === ACTIONSHEET_TYPE.MULTIPLE_VENUES}
+                onDidDismiss={() => {
+                    setView(({
+                        ...view,
+                        actionSheetType: undefined
+                    }))
+                }}
                 buttons={[
-                    {
-                        text: 'Bra',
-                        icon: heartOutline,
-                        handler: () => {
-                            vote(view.currentVenue?.id, 5)
+                    ...view.nearbyVenues.map(({name, id}) => {
+                        return {
+                            text: name,
+                            handler: () => {
+                                history.push(`/venue/${id}?rate=true`)
+                            }
                         }
-                    },
+                    }),
                     {
-                        text: 'Okej',
-                        icon: heartHalfOutline,
-                        handler: () => {
-                            vote(view.currentVenue?.id, 5)
-                        }
-                    },
-                    {
-                        text: 'Dåliga',
-                        icon: heartDislikeCircleOutline,
-                        handler: () => {
-                            vote(view.currentVenue?.id, 0)
-                        }
-                    },
-                    {
-                        text: 'Stäng och visa mig spårinfo',
+                        text: 'Stäng och visa alla skidspår',
                         icon: close,
-                        role: 'cancel',
-                        handler: () => {
-                            console.log('Cancel clicked');
-                        }
-                    }]}
+                        role: 'cancel'
+                    }
+                ]}
             >
             </IonActionSheet>
         </IonPage>

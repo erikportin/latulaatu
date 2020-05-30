@@ -37,7 +37,8 @@
     "eject": "react-scripts eject",
     "ios": "ionic capacitor copy ios && ionic capacitor open ios",
     "android": "ionic capacitor copy android && ionic capacitor open android",
-    "deploy-web": "firebase deploy"
+    "deploy-web": "npm run build && firebase deploy",
+    "resources": "cordova-res ios && cordova-res android && node scripts/resources.js"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -55,7 +56,8 @@
     ]
   },
   "devDependencies": {
-    "@capacitor/cli": "2.1.0"
+    "@capacitor/cli": "2.1.0",
+    "cordova-res": "^0.14.0"
   },
   "description": "An Ionic project"
 }

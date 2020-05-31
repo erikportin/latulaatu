@@ -7,7 +7,8 @@ import {
     IonLabel, IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab, IonNote
 } from '@ionic/react';
 import React, {useEffect, useState} from 'react';
-import './Venue.css';
+import classNames from 'classnames';
+import './Venues.css';
 import {addRating, getVenues, RATING, VENUE} from '../utils/db';
 import {Geolocation} from "@ionic-native/geolocation";
 import {distance, toPositionFromFirebaseGeoPoint, toPositionFromGeoposition} from "../utils/map";
@@ -22,6 +23,8 @@ import {
 } from "ionicons/icons";
 import Map from "../components/Map/Map";
 import {RouteComponentProps} from "react-router";
+import {QUERY} from "../utils/constants";
+import {getSearchFromUrl} from "../utils/url";
 interface PageProps extends RouteComponentProps<{
     history: string;
 }> {}
@@ -71,7 +74,7 @@ interface VIEW {
     actionSheetType: ACTIONSHEET_TYPE | undefined;
 }
 
-const Venues: React.FC<PageProps> = ({ history }) => {
+const Venues: React.FC<PageProps> = ({ history, location }) => {
     const [view, setView] = useState<VIEW>({
         venues: [],
         nearbyVenues: [],
@@ -87,11 +90,15 @@ const Venues: React.FC<PageProps> = ({ history }) => {
                 const sortedVenues = sortVenuesByDistanceVenues(venues, currentPosition);
                 const nearbyVenues = sortedVenues.filter(venue => venue.distance < 1);
 
-                let actionSheetType = ACTIONSHEET_TYPE.NO_VENUE;
-                if(nearbyVenues.length === 1){
-                    history.push(`/venue/${nearbyVenues[0].id}?rate=true`)
-                } else if(nearbyVenues.length > 1){
-                    actionSheetType = ACTIONSHEET_TYPE.MULTIPLE_VENUES
+                let actionSheetType: ACTIONSHEET_TYPE | undefined = ACTIONSHEET_TYPE.NO_VENUE;
+                if(getSearchFromUrl(location.search)[QUERY.SHOW_LIST]) {
+                    actionSheetType = undefined
+                } else {
+                    if(nearbyVenues.length === 1){
+                        history.push(`/venue/${nearbyVenues[0].id}?rate=true`)
+                    } else if(nearbyVenues.length > 1){
+                        actionSheetType = ACTIONSHEET_TYPE.MULTIPLE_VENUES
+                    }
                 }
 
                 console.log("nearbyVenues", nearbyVenues)
@@ -121,24 +128,27 @@ const Venues: React.FC<PageProps> = ({ history }) => {
         console.log("view", view)
     }, [view])
 
+    const venuesListClassName = classNames('venues-list', {
+        ['is-loading']: !!view.actionSheetType
+    });
+
     return (
         <IonPage>
             <IonContent className="content">
                 <IonLoading
                     isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING}
                     message={'Söker skidspår'}
-                    duration={5000}
                 />
                 <h1>Skidspår</h1>
-                {view.venues.length > 0 && view.actionSheetType === undefined && <IonList>
-                    {view.venues.map(({name, id, distance}, index) => <IonItem key={index} href={`/venue/${id}`}>
+                {view.venues.length > 0 && <IonList className={venuesListClassName}>
+                    {view.venues.map(({name, id, distance}, index) => <IonItem key={index} routerLink={`/venue/${id}`}>
                         <IonLabel>{name}</IonLabel>
                         <IonNote slot="end" color="primary">{`${Math.round(distance)}km`}</IonNote>
                     </IonItem>)}
                 </IonList>}
                 {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.actionSheetType &&
                     <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                        <IonFabButton href={'/add-venue'}>
+                        <IonFabButton routerLink={'/add-venue'}>
                             <IonIcon icon={addOutline} />
                         </IonFabButton>
                     </IonFab>
@@ -160,7 +170,7 @@ const Venues: React.FC<PageProps> = ({ history }) => {
                         return {
                             text: name,
                             handler: () => {
-                                history.push(`/venue/${id}?rate=true`)
+                                history.push(`/venue/${id}?${QUERY.RATE}=true`)
                             }
                         }
                     }),

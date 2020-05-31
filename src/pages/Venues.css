@@ -1,0 +1,3 @@
+.venues-list.is-loading{
+    filter: blur(20px)
+}

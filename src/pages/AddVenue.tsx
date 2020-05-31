@@ -13,7 +13,8 @@ import {addVenue} from "../utils/db";
 import {RouteComponentProps} from "react-router";
 import Map from '../components/Map/Map';
 import {MAP_DATA, POSITION} from "../components/Map/MapRenderer";
-import {heart, close, add, locateOutline} from "ionicons/icons";
+import {heart, close, add, locateOutline, arrowBack} from "ionicons/icons";
+import {QUERY} from "../utils/constants";
 interface UserDetailPageProps extends RouteComponentProps<{
     history: string;
 }> {}
@@ -111,6 +112,11 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
     return (
         <IonPage>
             <IonContent className="content">
+                <IonFab vertical="top" horizontal="start" slot="fixed">
+                    <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
+                        <IonIcon icon={arrowBack} />
+                    </IonFabButton>
+                </IonFab>
                 {view.searchingForPosition !== SEARCHING_FOR_POSITION.SEARCHING && <IonFab vertical="top" horizontal="end" slot="fixed">
                     <IonFabButton onClick={onFindPosition}>
                         <IonIcon icon={locateOutline} />
@@ -119,13 +125,12 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                 <IonToast
                     isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS}
                     message="Position hittad"
-                    position={'top'}
+                    position={'middle'}
                     duration={200}
                 />
                 <IonLoading
                     isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING}
                     message={'Söker position'}
-                    duration={5000}
                 />
                 <Map
                     showMap={view.searchingForPosition !== SEARCHING_FOR_POSITION.SEARCHING}

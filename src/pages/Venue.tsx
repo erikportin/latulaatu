@@ -12,6 +12,8 @@ import {
     pulseOutline, addOutline, arrowBack
 } from "ionicons/icons";import {POSITION} from "../components/Map/MapRenderer";
 import {VENUE_WITH_DISTANCE} from "./Venues";
+import {getSearchFromUrl} from "../utils/url";
+import {QUERY} from "../utils/constants";
 
 interface PageProps extends RouteComponentProps<{
     id: string;
@@ -35,8 +37,9 @@ const Venue: React.FC<PageProps> = ({match, location}) => {
     useEffect(() => {
         async function fetch(){
             const venue = await getVenue(venueId);
+            const search = getSearchFromUrl(location.search);
             setView({
-                actionSheetType: location.search === '?rate=true' ? ACTIONSHEET_TYPE.RATING : undefined,
+                actionSheetType: search[QUERY.RATE] ? ACTIONSHEET_TYPE.RATING : undefined,
                 venue
             })
         }
@@ -45,8 +48,9 @@ const Venue: React.FC<PageProps> = ({match, location}) => {
 
     async function vote(score: number){
         const venue = await addRating(venueId, score);
+        console.log("view", view)
         setView({
-            ...view,
+            actionSheetType: undefined,
             venue
         })
     }
@@ -55,7 +59,7 @@ const Venue: React.FC<PageProps> = ({match, location}) => {
         <IonPage>
             <IonContent className="content">
                 <IonFab vertical="top" horizontal="start" slot="fixed">
-                    <IonFabButton routerLink={`/venues`}>
+                    <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
                         <IonIcon icon={arrowBack} />
                     </IonFabButton>
                 </IonFab>

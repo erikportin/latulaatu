@@ -10,7 +10,7 @@ export function toPositionFromFirebaseGeoPoint(location: firebase.firestore.GeoP
 }
 
 export function distance(loc1: POSITION, loc2: POSITION): number {
-    if ((loc1.lat == loc2.lat) && (loc1.lng == loc2.lng)) {
+    if ((loc1.lat === loc2.lat) && (loc1.lng === loc2.lng)) {
         return 0;
     }
     else {

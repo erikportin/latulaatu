@@ -1,4 +1,4 @@
-import {IonContent, IonPage, IonButton, IonFab, IonFabButton, IonIcon, IonActionSheet} from '@ionic/react';
+import {IonContent, IonPage, IonFab, IonFabButton, IonIcon, IonActionSheet} from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import './Venue.css';
 import {RouteComponentProps} from "react-router";
@@ -8,10 +8,8 @@ import {
     heartOutline,
     heartDislikeCircleOutline,
     heartHalfOutline,
-    locateOutline,
-    pulseOutline, addOutline, arrowBack
-} from "ionicons/icons";import {POSITION} from "../components/Map/MapRenderer";
-import {VENUE_WITH_DISTANCE} from "./Venues";
+    arrowBack
+} from "ionicons/icons";
 import {getSearchFromUrl} from "../utils/url";
 import {QUERY} from "../utils/constants";
 
@@ -28,27 +26,29 @@ interface VIEW {
     actionSheetType?: ACTIONSHEET_TYPE | undefined;
 }
 
-const Venue: React.FC<PageProps> = ({match, location}) => {
+const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
     const [view, setView] = useState<VIEW>({
         venue: undefined,
         actionSheetType: undefined
     });
     const venueId = match.params.id;
+
     useEffect(() => {
         async function fetch(){
             const venue = await getVenue(venueId);
-            const search = getSearchFromUrl(location.search);
+            const searchFromUrl = getSearchFromUrl(search);
+
             setView({
-                actionSheetType: search[QUERY.RATE] ? ACTIONSHEET_TYPE.RATING : undefined,
+                actionSheetType: searchFromUrl[QUERY.RATE] ? ACTIONSHEET_TYPE.RATING : undefined,
                 venue
             })
         }
         fetch()
-    }, [venueId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     async function vote(score: number){
         const venue = await addRating(venueId, score);
-        console.log("view", view)
         setView({
             actionSheetType: undefined,
             venue

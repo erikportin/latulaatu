@@ -6,14 +6,14 @@ import {
     IonItem,
     IonActionSheet, IonModal, IonToast, IonLoading, IonIcon, IonFab, IonFabButton
 } from '@ionic/react';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { Geolocation } from '@ionic-native/geolocation/';
 import './Venue.css';
 import {addVenue} from "../utils/db";
 import {RouteComponentProps} from "react-router";
 import Map from '../components/Map/Map';
 import {MAP_DATA, POSITION} from "../components/Map/MapRenderer";
-import {heart, close, add, locateOutline, arrowBack} from "ionicons/icons";
+import {close, add, locateOutline, arrowBack} from "ionicons/icons";
 import {QUERY} from "../utils/constants";
 interface UserDetailPageProps extends RouteComponentProps<{
     history: string;
@@ -43,17 +43,23 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
         showActionSheet: false
     });
 
-    useEffect(() => {
-        console.log("fetch position")
-        onFindPosition()
+    const onFindPosition = useCallback(() => {
+        setView(view => ({
+            ...view,
+            searchingForPosition: SEARCHING_FOR_POSITION.SEARCHING,
+        }));
     }, [])
+
+    useEffect(() => {
+        onFindPosition()
+    }, [onFindPosition])
 
     useEffect(() => {
         async function find(){
             try{
                 const currentPosition = await Geolocation.getCurrentPosition();
                 console.log("Geolocation found", currentPosition.coords.latitude)
-                setView({
+                setView(view => ({
                     ...view,
                     latLng: {
                         lat: currentPosition.coords.latitude,
@@ -61,7 +67,7 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                     },
                     searchingForPosition: SEARCHING_FOR_POSITION.SUCCESS,
                     showActionSheet: true
-                });
+                }));
             } catch(error){
                 setView({
                     ...view,
@@ -73,12 +79,11 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
         if(view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING){
             find()
         }
-
-    }, [view])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
 
     async function addNewVenue(){
-        console.log("addNewVenue", view.name, view.latLng)
         //TODO refactor away if
         if(view.name && view.latLng){
             const venue = await addVenue(view.name, view.latLng);
@@ -91,7 +96,6 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
     }
 
     function onDropPin({latLng: { lat, lng }}: MAP_DATA){
-        console.log("LatLng", lat(), lng())
         setView({
             ...view,
             latLng: {
@@ -99,13 +103,6 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                 lng: lng()
             },
             showActionSheet: true
-        });
-    }
-
-    async function onFindPosition(){
-        setView({
-            ...view,
-            searchingForPosition: SEARCHING_FOR_POSITION.SEARCHING,
         });
     }
     

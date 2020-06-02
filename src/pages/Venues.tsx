@@ -1,7 +1,6 @@
 import {
     IonContent,
     IonPage,
-    IonButton,
     IonList,
     IonItem,
     IonLabel, IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab, IonNote
@@ -9,33 +8,20 @@ import {
 import React, {useEffect, useState} from 'react';
 import classNames from 'classnames';
 import './Venues.css';
-import {addRating, getVenues, RATING, VENUE} from '../utils/db';
+import {getVenues, VENUE} from '../utils/db';
 import {Geolocation} from "@ionic-native/geolocation";
-import {distance, toPositionFromFirebaseGeoPoint, toPositionFromGeoposition} from "../utils/map";
+import {distance, toPositionFromGeoposition} from "../utils/map";
 import {POSITION} from "../components/Map/MapRenderer";
 import {
     close,
-    heartOutline,
-    heartDislikeCircleOutline,
-    heartHalfOutline,
-    locateOutline,
-    pulseOutline, addOutline
+    addOutline
 } from "ionicons/icons";
-import Map from "../components/Map/Map";
 import {RouteComponentProps} from "react-router";
-import {QUERY} from "../utils/constants";
+import {QUERY, VENUE_WITH_DISTANCE} from "../utils/constants";
 import {getSearchFromUrl} from "../utils/url";
 interface PageProps extends RouteComponentProps<{
     history: string;
 }> {}
-
-export interface VENUE_WITH_DISTANCE {
-    id: string;
-    name: string;
-    rating: RATING[];
-    location: POSITION,
-    distance: number
-}
 
 function sortVenuesByDistanceVenues(venues: VENUE[] = [], currentPosition: POSITION): VENUE_WITH_DISTANCE[]{
     return venues
@@ -62,10 +48,6 @@ enum ACTIONSHEET_TYPE {
     NO_VENUE = 'no venue'
 }
 
-enum USER_ACTION {
-    SHOW_VENUES = 'show venues'
-}
-
 interface VIEW {
     venues: VENUE_WITH_DISTANCE[];
     nearbyVenues: VENUE_WITH_DISTANCE[];
@@ -74,13 +56,15 @@ interface VIEW {
     actionSheetType: ACTIONSHEET_TYPE | undefined;
 }
 
-const Venues: React.FC<PageProps> = ({ history, location }) => {
+const Venues: React.FC<PageProps> = ({ history, location: { search }  }) => {
     const [view, setView] = useState<VIEW>({
         venues: [],
         nearbyVenues: [],
         searchingForPosition: SEARCHING_FOR_POSITION.SEARCHING,
         actionSheetType: undefined
     });
+
+    const shouldShowList = getSearchFromUrl(search)[QUERY.SHOW_LIST];
 
     useEffect(() => {
         async function fetch(){
@@ -91,7 +75,7 @@ const Venues: React.FC<PageProps> = ({ history, location }) => {
                 const nearbyVenues = sortedVenues.filter(venue => venue.distance < 1);
 
                 let actionSheetType: ACTIONSHEET_TYPE | undefined = ACTIONSHEET_TYPE.NO_VENUE;
-                if(getSearchFromUrl(location.search)[QUERY.SHOW_LIST]) {
+                if(shouldShowList) {
                     actionSheetType = undefined
                 } else {
                     if(nearbyVenues.length === 1){
@@ -100,9 +84,6 @@ const Venues: React.FC<PageProps> = ({ history, location }) => {
                         actionSheetType = ACTIONSHEET_TYPE.MULTIPLE_VENUES
                     }
                 }
-
-                console.log("nearbyVenues", nearbyVenues)
-                console.log("actionSheetType", actionSheetType)
 
                 setView({
                     venues: sortedVenues,
@@ -114,22 +95,19 @@ const Venues: React.FC<PageProps> = ({ history, location }) => {
 
             } catch(error){
                 console.log("Geolocation error", error.message)
-                setView({
+                setView(view => ({
                     ...view,
                     searchingForPosition: SEARCHING_FOR_POSITION.FAILED
-                })
+                }))
             }
         }
 
         fetch()
-    }, [])
-
-    useEffect(() => {
-        console.log("view", view)
-    }, [view])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const venuesListClassName = classNames('venues-list', {
-        ['is-loading']: !!view.actionSheetType
+        'is-loading': !!view.actionSheetType
     });
 
     return (

@@ -1,9 +1,5 @@
 import {
-    IonContent,
-    IonPage,
-    IonList,
-    IonItem,
-    IonLabel, IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab, IonNote
+    IonPage,IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab, IonRouterLink
 } from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import classNames from 'classnames';
@@ -56,7 +52,7 @@ interface VIEW {
     actionSheetType: ACTIONSHEET_TYPE | undefined;
 }
 
-const Venues: React.FC<PageProps> = ({ history, location: { search }  }) => {
+const Venues: React.FC<PageProps> = ({ history, location: { search }, location  }) => {
     const [view, setView] = useState<VIEW>({
         venues: [],
         nearbyVenues: [],
@@ -107,23 +103,24 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }  }) => {
     }, []);
 
     const venuesListClassName = classNames('venues-list', {
-        'is-loading': !!view.actionSheetType
-    });
+        'is-loading': !!view.actionSheetType //TODO handle navigation
+    })
 
     return (
         <IonPage>
-            <IonContent className="content">
                 <IonLoading
                     isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING}
                     message={'Söker skidspår'}
                 />
-                <h1>Skidspår</h1>
-                {view.venues.length > 0 && <IonList className={venuesListClassName}>
-                    {view.venues.map(({name, id, distance}, index) => <IonItem key={index} routerLink={`/venue/${id}`}>
-                        <IonLabel>{name}</IonLabel>
-                        <IonNote slot="end" color="primary">{`${Math.round(distance)}km`}</IonNote>
-                    </IonItem>)}
-                </IonList>}
+                <div className="venues">
+                    <h1>Skidspår</h1>
+                    {view.venues.length > 0 && <ul className={venuesListClassName}>
+                        {view.venues.map(({name, id, distance}, index) => <li key={index}>
+                            <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
+                        </li>)}
+                    </ul>}
+
+                </div>
                 {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.actionSheetType &&
                     <IonFab vertical="bottom" horizontal="end" slot="fixed">
                         <IonFabButton routerLink={'/add-venue'}>
@@ -131,7 +128,6 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }  }) => {
                         </IonFabButton>
                     </IonFab>
                 }
-            </IonContent>
 
             {/* MULTIPLE VENUES */}
             <IonActionSheet

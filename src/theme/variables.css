@@ -80,7 +80,7 @@ http://ionicframework.com/docs/theming/ */
 
 
 body {
-  --ion-font-family: 'EB Garamond', serif;
+  --ion-font-family: 'Fira Sans', sans-serif;
   --ion-background-color: #2A2760;
   --ion-background-color-rgb: 42, 39, 96;
 
@@ -107,10 +107,4 @@ body {
   --ion-color-step-950: #f3f3f3;
   --ion-border-color: #222222;
 }
-
-h1{
-  font-family: 'Fira Sans', sans-serif;
-}
-
-
 

@@ -21,6 +21,7 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import './theme/base.css';
 import Venues from "./pages/Venues";
 import Venue from './pages/Venue';
 import AddVenue from "./pages/AddVenue";

@@ -20,16 +20,22 @@ enum Collection {
     VENUES = 'venues'
 }
 
-export interface RATING {
-    date: number
+interface FIREBASE_RATING {
+    date: firebase.firestore.Timestamp,
     score: number
 }
 
 interface FIREBASE_VENUE {
     name: string;
-    rating: RATING[];
+    rating: FIREBASE_RATING[];
     location: firebase.firestore.GeoPoint
 }
+
+export interface RATING {
+    date: Date,
+    score: number
+}
+
 
 export interface VENUE{
     name: string;
@@ -40,6 +46,15 @@ export interface VENUE{
 
 console.info("init db");
 
+
+function toRating({ score, date }: FIREBASE_RATING): RATING{
+    return {
+        score,
+        date: date.toDate()
+    }
+}
+
+
 export async function getVenues(): Promise<VENUE[]>{
     const snapshot = await db.collection(Collection.VENUES).get();
     const venues: VENUE[] = [];
@@ -47,6 +62,7 @@ export async function getVenues(): Promise<VENUE[]>{
         const data = doc.data() as FIREBASE_VENUE;
         venues.push({
             ...data,
+            rating: data.rating.map(toRating),
             location: toPositionFromFirebaseGeoPoint(data.location),
             id: doc.id
         })
@@ -61,6 +77,7 @@ export async function getVenue(id: string): Promise<VENUE>{
 
     return {
         ...data,
+        rating: data.rating.map(toRating),
         location: toPositionFromFirebaseGeoPoint(data.location),
         id: snapshot.id
     };

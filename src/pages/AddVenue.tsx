@@ -43,45 +43,35 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
         showActionSheet: false
     });
 
-    const onFindPosition = useCallback(() => {
-        setView(view => ({
-            ...view,
-            searchingForPosition: SEARCHING_FOR_POSITION.SEARCHING,
-        }));
-    }, [])
 
     useEffect(() => {
-        onFindPosition()
-    }, [onFindPosition])
-
-    useEffect(() => {
-        async function find(){
-            try{
-                const currentPosition = await Geolocation.getCurrentPosition();
-                console.log("Geolocation found", currentPosition.coords.latitude)
-                setView(view => ({
-                    ...view,
-                    latLng: {
-                        lat: currentPosition.coords.latitude,
-                        lng: currentPosition.coords.longitude
-                    },
-                    searchingForPosition: SEARCHING_FOR_POSITION.SUCCESS,
-                    showActionSheet: true
-                }));
-            } catch(error){
-                setView({
-                    ...view,
-                    searchingForPosition: SEARCHING_FOR_POSITION.FAILED,
-                });
-                console.log("Geolocation error", error.message)
-            }
-        }
         if(view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING){
             find()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    async function find(){
+        try{
+            const currentPosition = await Geolocation.getCurrentPosition();
+            console.log("Geolocation found", currentPosition.coords.latitude)
+            setView(view => ({
+                ...view,
+                latLng: {
+                    lat: currentPosition.coords.latitude,
+                    lng: currentPosition.coords.longitude
+                },
+                searchingForPosition: SEARCHING_FOR_POSITION.SUCCESS,
+                showActionSheet: true
+            }));
+        } catch(error){
+            setView({
+                ...view,
+                searchingForPosition: SEARCHING_FOR_POSITION.FAILED,
+            });
+            console.log("Geolocation error", error.message)
+        }
+    }
 
     async function addNewVenue(){
         //TODO refactor away if
@@ -108,14 +98,14 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
     
     return (
         <IonPage>
-            <IonContent className="content">
+            <div className="content">
                 <IonFab vertical="top" horizontal="start" slot="fixed">
                     <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
                         <IonIcon icon={arrowBack} />
                     </IonFabButton>
                 </IonFab>
                 {view.searchingForPosition !== SEARCHING_FOR_POSITION.SEARCHING && <IonFab vertical="top" horizontal="end" slot="fixed">
-                    <IonFabButton onClick={onFindPosition}>
+                    <IonFabButton onClick={find}>
                         <IonIcon icon={locateOutline} />
                     </IonFabButton>
                 </IonFab>}
@@ -144,12 +134,12 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                                 name: e.detail.value!
                             })}
                             clearInput />
+                        <IonButton onClick={addNewVenue} disabled={!view.name}>Lägg till</IonButton>
                     </IonItem>
-                    <IonButton onClick={addNewVenue} disabled={!view.name}>Lägg till</IonButton>
                     <IonButton onClick={() => setView({
                         ...view,
                         showAddView: false
-                    })}>Close Modal</IonButton>
+                    })}>Stäng</IonButton>
                 </IonModal>
                 <IonActionSheet
                     isOpen={view.showActionSheet}
@@ -182,7 +172,7 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                     }]}
                 >
                 </IonActionSheet>
-            </IonContent>
+            </div>
         </IonPage>
     );
 };

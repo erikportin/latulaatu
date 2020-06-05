@@ -1,4 +1,4 @@
-import {IonContent, IonPage, IonFab, IonFabButton, IonIcon, IonActionSheet} from '@ionic/react';
+import {IonPage, IonFab, IonFabButton, IonIcon, IonActionSheet} from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import './Venue.css';
 import {RouteComponentProps} from "react-router";
@@ -12,6 +12,7 @@ import {
 } from "ionicons/icons";
 import {getSearchFromUrl} from "../utils/url";
 import {QUERY} from "../utils/constants";
+import {getRatingByDay} from "../utils/rating";
 
 interface PageProps extends RouteComponentProps<{
     id: string;
@@ -45,7 +46,7 @@ const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
         }
         fetch()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [venueId]);
 
     async function vote(score: number){
         const venue = await addRating(venueId, score);
@@ -57,20 +58,36 @@ const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
     
     return (
         <IonPage>
-            <IonContent className="content">
-                <IonFab vertical="top" horizontal="start" slot="fixed">
-                    <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
-                        <IonIcon icon={arrowBack} />
-                    </IonFabButton>
-                </IonFab>
+            <div className="venue">
                 {view.venue &&
                     <>
                         <h1>{view.venue.name}</h1>
-                        <p>Rating: {view.venue.rating.reduce((acc, {score}) => acc + score, 0)}</p>
-
+                        <ul>
+                            {getRatingByDay(view.venue.rating).map(({ rating, date, numberOfRaters }) =>
+                                <li>
+                                    <span className="date">{date}</span>
+                                    <span className="score">{rating}</span>
+                                </li>
+                            )}
+                        </ul>
                     </>
                 }
-            </IonContent>
+            </div>
+            <IonFab vertical="bottom" horizontal="start" slot="fixed">
+                <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
+                    <IonIcon icon={arrowBack} />
+                </IonFabButton>
+            </IonFab>
+            <IonFab vertical="bottom" horizontal="end" slot="fixed">
+                <IonFabButton onClick={() => {
+                    setView({
+                        ...view,
+                        actionSheetType: ACTIONSHEET_TYPE.RATING
+                    })
+                }}>
+                    <IonIcon icon={heartOutline} />
+                </IonFabButton>
+            </IonFab>
             <IonActionSheet
                 header={'Hur var spåren idag?'}
                 isOpen={view.actionSheetType === ACTIONSHEET_TYPE.RATING}

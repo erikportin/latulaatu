@@ -1,0 +1,29 @@
+.loader{
+    --background:  var(--ion-color-secondary);
+    --spinner-color: var(--ion-color-tertiary);
+    color: var(--ion-color-tertiary);
+}
+
+.action-sheet{
+    --background:  var(--ion-color-secondary);
+    --color: var(--ion-color-tertiary);
+    --button-color: var(--ion-color-tertiary);
+    --button-background-selected-opacity: 0;
+}
+
+.page{
+    padding: max(20px, env(safe-area-inset-top, 20px))
+    max(20px, env(safe-area-inset-right, 20px))
+    max(20px, env(safe-area-inset-bottom, 20px))
+    max(20px, env(safe-area-inset-left, 20px));
+}
+
+.title{
+    font-family: 'Fira Sans', sans-serif;
+    margin: 0 0 20px;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    font-weight: 600;
+    font-size: 45px;
+    color: #e1eaea;
+}

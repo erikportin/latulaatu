@@ -1,4 +1,4 @@
-import {IonPage, IonFab, IonFabButton, IonIcon, IonActionSheet} from '@ionic/react';
+import {IonPage, IonFab, IonFabButton, IonIcon, IonActionSheet, IonContent} from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import './Venue.css';
 import {RouteComponentProps} from "react-router";
@@ -13,6 +13,8 @@ import {
 import {getSearchFromUrl} from "../utils/url";
 import {QUERY} from "../utils/constants";
 import {getRatingByDay} from "../utils/rating";
+import {pretty} from "../utils/date";
+import Page from "../components/Page/Page";
 
 interface PageProps extends RouteComponentProps<{
     id: string;
@@ -25,6 +27,18 @@ enum ACTIONSHEET_TYPE {
 interface VIEW {
     venue?: VENUE;
     actionSheetType?: ACTIONSHEET_TYPE | undefined;
+}
+
+function getIconForRating(rating: number): string{
+    if(rating > 4) {
+        return heartOutline
+    }
+
+    if(rating > 2){
+        return heartHalfOutline
+    }
+
+    return heartDislikeCircleOutline
 }
 
 const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
@@ -57,77 +71,65 @@ const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
     }
     
     return (
-        <IonPage>
-            <div className="venue">
+        <Page title={view.venue?.name}
+              backUrl={`/venues?${QUERY.SHOW_LIST}=true`}
+              actionSheet={{
+                  header: 'Hur var spåren idag?',
+                  isOpen: view.actionSheetType === ACTIONSHEET_TYPE.RATING,
+                  onDidDismiss: () => setView({
+                      ...view,
+                      actionSheetType: undefined
+                  }),
+                  cancel: 'Stäng',
+                  buttons: [
+                      {
+                          text: 'Bra',
+                          icon: heartOutline,
+                          handler: () => {
+                              vote(5)
+                          }
+                      },
+                      {
+                          text: 'Okej',
+                          icon: heartHalfOutline,
+                          handler: () => {
+                              vote(5)
+                          }
+                      },
+                      {
+                          text: 'Dåliga',
+                          icon: heartDislikeCircleOutline,
+                          handler: () => {
+                              vote(0)
+                          }
+                      }]
+              }}
+        >
+            <>
                 {view.venue &&
-                    <>
-                        <h1>{view.venue.name}</h1>
-                        <ul>
-                            {getRatingByDay(view.venue.rating).map(({ rating, date, numberOfRaters }) =>
-                                <li>
-                                    <span className="date">{date}</span>
-                                    <span className="score">{rating}</span>
-                                </li>
-                            )}
-                        </ul>
-                    </>
+                    <ul>
+                        {getRatingByDay(view.venue.rating).map(({ rating, date }, index) =>
+                            <li key={index}>
+                                <span className="date">{pretty(date)}</span>
+                                <span className="score">
+                                    <IonIcon icon={getIconForRating(rating)} />
+                                </span>
+                            </li>
+                        )}
+                    </ul>
                 }
-            </div>
-            <IonFab vertical="bottom" horizontal="start" slot="fixed">
-                <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
-                    <IonIcon icon={arrowBack} />
-                </IonFabButton>
-            </IonFab>
-            <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                <IonFabButton onClick={() => {
-                    setView({
-                        ...view,
-                        actionSheetType: ACTIONSHEET_TYPE.RATING
-                    })
-                }}>
-                    <IonIcon icon={heartOutline} />
-                </IonFabButton>
-            </IonFab>
-            <IonActionSheet
-                header={'Hur var spåren idag?'}
-                isOpen={view.actionSheetType === ACTIONSHEET_TYPE.RATING}
-                onDidDismiss={() => setView({
-                    ...view,
-                    actionSheetType: undefined
-                })}
-                buttons={[
-                    {
-                        text: 'Bra',
-                        icon: heartOutline,
-                        handler: () => {
-                            vote(5)
-                        }
-                    },
-                    {
-                        text: 'Okej',
-                        icon: heartHalfOutline,
-                        handler: () => {
-                            vote(5)
-                        }
-                    },
-                    {
-                        text: 'Dåliga',
-                        icon: heartDislikeCircleOutline,
-                        handler: () => {
-                            vote(0)
-                        }
-                    },
-                    {
-                        text: 'Stäng och visa mig spårinfo',
-                        icon: close,
-                        role: 'cancel',
-                        handler: () => {
-                            console.log('Cancel clicked');
-                        }
-                    }]}
-            >
-            </IonActionSheet>
-        </IonPage>
+                <IonFab vertical="bottom" horizontal="end" slot="fixed" >
+                    <IonFabButton color={'tertiary'} onClick={() => {
+                        setView({
+                            ...view,
+                            actionSheetType: ACTIONSHEET_TYPE.RATING
+                        })
+                    }}>
+                        <IonIcon icon={heartOutline} />
+                    </IonFabButton>
+                </IonFab>
+            </>
+        </Page>
     );
 };
 

@@ -3,11 +3,10 @@ import {RATING} from "./db";
 export interface RATING_DAY {
     rating: number,
     numberOfRaters: number,
-    date: string
+    date: Date
 }
 
 export function getRatingByDay(rating: RATING[] = []):RATING_DAY[]{
-    console.log("rating", rating)
     let days: Record<string, number[]> = {};
     let ret: RATING_DAY[] = []
 
@@ -23,15 +22,14 @@ export function getRatingByDay(rating: RATING[] = []):RATING_DAY[]{
     for (const date in days) {
         if (days.hasOwnProperty(date)) {
             const numberOfRaters = days[date].length;
+            const rating = days[date].reduce((r, acc) => r + acc, 0) / numberOfRaters;
             ret.push({
-                date,
+                date: new Date(date),
                 numberOfRaters,
-                rating: days[date].reduce((r, acc) => r + acc, 0) / numberOfRaters
+                rating: parseFloat(rating.toFixed(3))
             })
         }
     }
 
-    console.log("ret", ret.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
-
-    return ret.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return ret.sort((a, b) => b.date.getTime() - a.date.getTime());
 }

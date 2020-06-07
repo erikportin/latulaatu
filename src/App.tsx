@@ -20,8 +20,8 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 /* Theme variables */
-import './theme/variables.css';
-import './theme/base.css';
+import './style/theme/variables.css';
+import './style/base.css';
 import Venues from "./pages/Venues";
 import Venue from './pages/Venue';
 import AddVenue from "./pages/AddVenue";
@@ -29,7 +29,7 @@ import AddVenue from "./pages/AddVenue";
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
-      <IonRouterOutlet>
+      <IonRouterOutlet animated={false}>
         <Route path="/venue/:id" component={Venue} exact={true} />
         <Route path="/venues" component={Venues} exact={true} />
         <Route path="/add-venue" component={AddVenue} exact={true} />

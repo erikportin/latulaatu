@@ -1,12 +1,11 @@
 import {
-    IonContent,
     IonPage,
     IonButton,
     IonInput,
     IonItem,
     IonActionSheet, IonModal, IonToast, IonLoading, IonIcon, IonFab, IonFabButton
 } from '@ionic/react';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { Geolocation } from '@ionic-native/geolocation/';
 import './Venue.css';
 import {addVenue} from "../utils/db";

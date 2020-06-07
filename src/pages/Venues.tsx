@@ -1,6 +1,4 @@
-import {
-    IonPage,IonLoading, IonActionSheet, IonFabButton, IonIcon, IonFab, IonRouterLink
-} from '@ionic/react';
+import {IonActionSheet, IonFabButton, IonIcon, IonFab, IonRouterLink} from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import classNames from 'classnames';
 import './Venues.css';
@@ -15,6 +13,7 @@ import {
 import {RouteComponentProps} from "react-router";
 import {QUERY, VENUE_WITH_DISTANCE} from "../utils/constants";
 import {getSearchFromUrl} from "../utils/url";
+import Page from "../components/Page/Page";
 interface PageProps extends RouteComponentProps<{
     history: string;
 }> {}
@@ -104,59 +103,54 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }, location  
 
     const venuesListClassName = classNames('venues-list', {
         'is-loading': !!view.actionSheetType //TODO handle navigation
-    })
+    });
 
     return (
-        <IonPage>
-                <IonLoading
-                    isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING}
-                    message={'Söker skidspår'}
-                />
-                <div className="venues">
-                    <h1>Skidspår</h1>
-                    {view.venues.length > 0 && <ul className={venuesListClassName}>
-                        {view.venues.map(({name, id, distance}, index) => <li key={index}>
-                            <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
-                        </li>)}
-                    </ul>}
+        <Page title={'Skidspår'}
+              className={'venues'}
+              actionSheet={{
+                  header: 'Flera skidspår hittade i din närheten. Välj ett.',
+                  isOpen: view.actionSheetType === ACTIONSHEET_TYPE.MULTIPLE_VENUES,
+                  buttons: view.nearbyVenues.map(({name, id}) => {
+                      return {
+                          text: name,
+                          handler: () => {
+                              history.push(`/venue/${id}?${QUERY.RATE}=true`)
+                          }
+                      }
+                  }),
+                  cancel: 'Stäng och visa alla skidspår',
+                  onDidDismiss: () => {
+                      setView(({
+                          ...view,
+                          actionSheetType: undefined
+                      }))
+                  },
 
-                </div>
-                {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.actionSheetType &&
-                    <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                        <IonFabButton routerLink={'/add-venue'}>
-                            <IonIcon icon={addOutline} />
-                        </IonFabButton>
-                    </IonFab>
+              }}
+              loader={{
+                  text: 'Söker skidspår',
+                  isLoading: view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING
+              }}
+        >
+            <>
+                {view.venues.length > 0 &&
+                <ul className={venuesListClassName}>
+                    {view.venues.map(({name, id, distance}, index) => <li key={index}>
+                        <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
+                    </li>)}
+                </ul>
                 }
 
-            {/* MULTIPLE VENUES */}
-            <IonActionSheet
-                header={'Flera skidspår hittade i din närheten. Välj ett.'}
-                isOpen={view.actionSheetType === ACTIONSHEET_TYPE.MULTIPLE_VENUES}
-                onDidDismiss={() => {
-                    setView(({
-                        ...view,
-                        actionSheetType: undefined
-                    }))
-                }}
-                buttons={[
-                    ...view.nearbyVenues.map(({name, id}) => {
-                        return {
-                            text: name,
-                            handler: () => {
-                                history.push(`/venue/${id}?${QUERY.RATE}=true`)
-                            }
-                        }
-                    }),
-                    {
-                        text: 'Stäng och visa alla skidspår',
-                        icon: close,
-                        role: 'cancel'
-                    }
-                ]}
-            >
-            </IonActionSheet>
-        </IonPage>
+                {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.actionSheetType &&
+                <IonFab vertical="bottom" horizontal="end" slot="fixed">
+                    <IonFabButton routerLink={'/add-venue'} color={'secondary'}>
+                        <IonIcon icon={addOutline} />
+                    </IonFabButton>
+                </IonFab>
+                }
+            </>
+        </Page>
     );
 };
 

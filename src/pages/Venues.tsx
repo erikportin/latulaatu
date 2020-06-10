@@ -1,4 +1,4 @@
-import {IonActionSheet, IonFabButton, IonIcon, IonFab, IonRouterLink} from '@ionic/react';
+import {IonRouterLink} from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import classNames from 'classnames';
 import './Venues.css';
@@ -6,14 +6,12 @@ import {getVenues, VENUE} from '../utils/db';
 import {Geolocation} from "@ionic-native/geolocation";
 import {distance, toPositionFromGeoposition} from "../utils/map";
 import {POSITION} from "../components/Map/MapRenderer";
-import {
-    close,
-    addOutline
-} from "ionicons/icons";
+import { addOutline } from "ionicons/icons";
 import {RouteComponentProps} from "react-router";
 import {QUERY, VENUE_WITH_DISTANCE} from "../utils/constants";
 import {getSearchFromUrl} from "../utils/url";
 import Page from "../components/Page/Page";
+import {List, ListItem} from "../components/Animated/Animated";
 interface PageProps extends RouteComponentProps<{
     history: string;
 }> {}
@@ -69,7 +67,7 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }, location  
                 const sortedVenues = sortVenuesByDistanceVenues(venues, currentPosition);
                 const nearbyVenues = sortedVenues.filter(venue => venue.distance < 1);
 
-                let actionSheetType: ACTIONSHEET_TYPE | undefined = ACTIONSHEET_TYPE.NO_VENUE;
+                let actionSheetType: ACTIONSHEET_TYPE | undefined = undefined;
                 if(shouldShowList) {
                     actionSheetType = undefined
                 } else {
@@ -132,22 +130,19 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }, location  
                   text: 'Söker skidspår',
                   isLoading: view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING
               }}
+              actionBtn={{
+                  isHidden: view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING && view.actionSheetType === undefined,
+                  link: '/add-venue',
+                  icon: addOutline
+              }}
         >
             <>
                 {view.venues.length > 0 &&
-                <ul className={venuesListClassName}>
-                    {view.venues.map(({name, id, distance}, index) => <li key={index}>
+                <List className={venuesListClassName}>
+                    {view.venues.map(({name, id, distance}, index) => <ListItem key={index}>
                         <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
-                    </li>)}
-                </ul>
-                }
-
-                {view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS && !view.actionSheetType &&
-                <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton routerLink={'/add-venue'} color={'secondary'}>
-                        <IonIcon icon={addOutline} />
-                    </IonFabButton>
-                </IonFab>
+                    </ListItem>)}
+                </List>
                 }
             </>
         </Page>

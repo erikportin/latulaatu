@@ -1,20 +1,20 @@
-import {IonPage, IonFab, IonFabButton, IonIcon, IonActionSheet, IonContent} from '@ionic/react';
-import React, {useEffect, useState} from 'react';
+import {IonIcon} from '@ionic/react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import './Venue.css';
 import {RouteComponentProps} from "react-router";
 import {getVenue, addRating, VENUE} from "../utils/db";
 import {
-    close,
     heartOutline,
     heartDislikeCircleOutline,
     heartHalfOutline,
-    arrowBack
 } from "ionicons/icons";
 import {getSearchFromUrl} from "../utils/url";
 import {QUERY} from "../utils/constants";
 import {getRatingByDay} from "../utils/rating";
 import {pretty} from "../utils/date";
 import Page from "../components/Page/Page";
+import {List, ListItem} from "../components/Animated/Animated";
+import {PATHS} from "../App";
 
 interface PageProps extends RouteComponentProps<{
     id: string;
@@ -41,26 +41,42 @@ function getIconForRating(rating: number): string{
     return heartDislikeCircleOutline
 }
 
-const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
+const Venue: React.FC<PageProps> = ({ match: { params: { id: venueId } }, location: { search, pathname }}) => {
     const [view, setView] = useState<VIEW>({
         venue: undefined,
         actionSheetType: undefined
     });
-    const venueId = match.params.id;
+
+    let prevPath = useRef(pathname);
+
+    useLayoutEffect(() => {
+        if(pathname.startsWith(PATHS.VENUE) && pathname !== prevPath.current){
+            setView({
+                actionSheetType: undefined,
+                venue: undefined
+            })
+        }
+    }, [pathname])
 
     useEffect(() => {
-        async function fetch(){
+        if(pathname.startsWith(PATHS.VENUE)){
+            prevPath.current = pathname;
+        }
+    }, [pathname])
+
+    useEffect(() => {
+        async function fetch() {
             const venue = await getVenue(venueId);
             const searchFromUrl = getSearchFromUrl(search);
-
             setView({
                 actionSheetType: searchFromUrl[QUERY.RATE] ? ACTIONSHEET_TYPE.RATING : undefined,
                 venue
             })
         }
-        fetch()
+
+        fetch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [venueId]);
+    }, [venueId])
 
     async function vote(score: number){
         const venue = await addRating(venueId, score);
@@ -69,7 +85,7 @@ const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
             venue
         })
     }
-    
+
     return (
         <Page title={view.venue?.name}
               backUrl={`/venues?${QUERY.SHOW_LIST}=true`}
@@ -80,7 +96,6 @@ const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
                       ...view,
                       actionSheetType: undefined
                   }),
-                  cancel: 'Stäng',
                   buttons: [
                       {
                           text: 'Bra',
@@ -104,30 +119,30 @@ const Venue: React.FC<PageProps> = ({match, location: { search }}) => {
                           }
                       }]
               }}
+              actionBtn={{
+                  onClick: () => {
+                      setView({
+                          ...view,
+                          actionSheetType: ACTIONSHEET_TYPE.RATING
+                      })
+                  },
+                  icon: heartOutline
+              }}
+              className="venue"
         >
             <>
                 {view.venue &&
-                    <ul>
-                        {getRatingByDay(view.venue.rating).map(({ rating, date }, index) =>
-                            <li key={index}>
-                                <span className="date">{pretty(date)}</span>
-                                <span className="score">
+                <List className="ratings">
+                    {getRatingByDay(view.venue.rating).map(({ rating, date }, index) =>
+                        <ListItem key={index} className="rating">
+                            <span className="date">{pretty(date)}</span>
+                            <span className="score">
                                     <IonIcon icon={getIconForRating(rating)} />
                                 </span>
-                            </li>
-                        )}
-                    </ul>
+                        </ListItem>
+                    )}
+                </List>
                 }
-                <IonFab vertical="bottom" horizontal="end" slot="fixed" >
-                    <IonFabButton color={'tertiary'} onClick={() => {
-                        setView({
-                            ...view,
-                            actionSheetType: ACTIONSHEET_TYPE.RATING
-                        })
-                    }}>
-                        <IonIcon icon={heartOutline} />
-                    </IonFabButton>
-                </IonFab>
             </>
         </Page>
     );

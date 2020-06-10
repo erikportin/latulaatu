@@ -26,11 +26,15 @@ import Venues from "./pages/Venues";
 import Venue from './pages/Venue';
 import AddVenue from "./pages/AddVenue";
 
+export enum PATHS {
+    VENUE= '/venue/'
+}
+
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet animated={false}>
-        <Route path="/venue/:id" component={Venue} exact={true} />
+        <Route path={`${PATHS.VENUE}:id`} component={Venue} exact={true} />
         <Route path="/venues" component={Venues} exact={true} />
         <Route path="/add-venue" component={AddVenue} exact={true} />
         <Route exact path="/" render={() => <Redirect to="/venues" />} />

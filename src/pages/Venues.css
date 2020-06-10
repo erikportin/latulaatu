@@ -1,7 +1,6 @@
-.venues-list.is-loading{
-    //filter: blur(20px)
+.venues .body{
+    padding: 20px;
 }
-
 .venues ul {
     padding: 0;
 }

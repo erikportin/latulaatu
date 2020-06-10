@@ -2,15 +2,22 @@ import React from 'react';
 import {
     IonActionSheet,
     IonContent, IonFab, IonFabButton, IonIcon, IonLoading,
-    IonPage,
-    useIonViewDidEnter,
-    useIonViewDidLeave,
+    IonPage, IonToast,
+    useIonViewDidEnter, useIonViewDidLeave,
     useIonViewWillEnter,
     useIonViewWillLeave
 } from "@ionic/react";
 import './Page.css';
 import {arrowBack, close} from "ionicons/icons";
-import {QUERY} from "../../utils/constants";
+import {Span} from "../Animated/Animated";
+
+interface ACTION_BTN {
+    onClick?: () => void,
+    icon: string;
+    link?: string,
+    position?: 'bottom' | 'top',
+    isHidden?: boolean,
+}
 
 interface IProps {
     children: JSX.Element[] | JSX.Element;
@@ -21,7 +28,7 @@ interface IProps {
         text: string
     },
     actionSheet?: {
-        header: string,
+        header?: string,
         isOpen: boolean,
         onDidDismiss: () => void,
         buttons: {
@@ -29,26 +36,67 @@ interface IProps {
             icon?: string,
             handler: () => void
         }[],
-        cancel: string;
+        cancel?: string;
     },
-    backUrl?: string
+    toast?: {
+        isOpen: boolean,
+        text: string
+    },
+    backUrl?: string,
+    actionBtn?: ACTION_BTN
+    viewWillEnter?: () => void
+    viewWillLeave?: () => void
+    viewDidEnter?: () => void
+    viewDidLeave?: () => void
 }
-const Page: React.FC<IProps> = ({ title, className, children, loader, actionSheet, backUrl}) => {
-    useIonViewDidEnter(() => {
-        console.log('ionViewDidEnter event fired', title);
-    });
 
-    useIonViewDidLeave(() => {
-        console.log('ionViewDidLeave event fired', title);
+function getActionBtnEl(actionBtn: ACTION_BTN | undefined): JSX.Element | null {
+    if(actionBtn && !actionBtn.isHidden) {
+        if (actionBtn.link) {
+            return <IonFab vertical={actionBtn.position || 'bottom'} horizontal="end" slot="fixed">
+                <IonFabButton color={'tertiary'} routerLink={actionBtn.link}>
+                    <IonIcon icon={actionBtn.icon}/>
+                </IonFabButton>
+            </IonFab>
+        }
+        if (actionBtn.onClick) {
+            return <IonFab vertical={actionBtn.position || 'bottom'} horizontal="end" slot="fixed">
+                <IonFabButton color={'tertiary'} onClick={actionBtn.onClick}>
+                    <IonIcon icon={actionBtn.icon}/>
+                </IonFabButton>
+            </IonFab>
+        }
+    }
+
+    return null;
+}
+
+const Page: React.FC<IProps> = ({ title, className, children, loader, actionSheet, toast, backUrl, actionBtn, viewWillEnter, viewWillLeave, viewDidEnter, viewDidLeave}) => {
+    useIonViewDidEnter(() => {
+        if(viewDidEnter){
+            viewDidEnter()
+        }
     });
 
     useIonViewWillEnter(() => {
-        console.log('ionViewWillEnter event fired', title);
+        if(viewWillEnter){
+            viewWillEnter()
+        }
     });
 
     useIonViewWillLeave(() => {
-        console.log('ionViewWillLeave event fired', title);
+        if(viewWillLeave){
+            viewWillLeave()
+        }
     });
+
+    useIonViewDidLeave(() => {
+        if(viewDidLeave){
+            viewDidLeave()
+        }
+    });
+
+
     return (
         <IonPage className={`page ${className}`}>
             {loader && <IonLoading
@@ -56,10 +104,23 @@ const Page: React.FC<IProps> = ({ title, className, children, loader, actionShee
                 isOpen={loader.isLoading}
                 message={loader.text}
             />}
+            {toast && <IonToast
+                isOpen={toast.isOpen}
+                message={toast.text}
+                position={'middle'}
+                duration={200}
+            />}
             <IonContent>
-                {title && <h1 className="title">{title}</h1>}
-                {children}
+                <div className="page-inner">
+                    {title && <h1 className="title">
+                        <Span className="title-inner">{title}</Span>
+                    </h1>}
+                    <div className="body">
+                        {children}
+                    </div>
+                </div>
             </IonContent>
+
             {actionSheet && <IonActionSheet
                 cssClass={'action-sheet'}
                 header={actionSheet.header}
@@ -68,7 +129,7 @@ const Page: React.FC<IProps> = ({ title, className, children, loader, actionShee
                 buttons={[
                     ...actionSheet.buttons,
                     {
-                        text: actionSheet.cancel,
+                        text: actionSheet.cancel || 'Stäng',
                         icon: close,
                         role: 'cancel'
                     }
@@ -80,8 +141,9 @@ const Page: React.FC<IProps> = ({ title, className, children, loader, actionShee
                     <IonIcon icon={arrowBack} />
                 </IonFabButton>
             </IonFab>}
+            {getActionBtnEl(actionBtn)}
         </IonPage>
     )
-}
+};
 
 export default Page;

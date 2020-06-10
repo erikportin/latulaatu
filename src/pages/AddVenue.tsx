@@ -1,9 +1,8 @@
 import {
-    IonPage,
     IonButton,
     IonInput,
     IonItem,
-    IonActionSheet, IonModal, IonToast, IonLoading, IonIcon, IonFab, IonFabButton
+    IonModal
 } from '@ionic/react';
 import React, {useEffect, useState} from 'react';
 import { Geolocation } from '@ionic-native/geolocation/';
@@ -12,8 +11,9 @@ import {addVenue} from "../utils/db";
 import {RouteComponentProps} from "react-router";
 import Map from '../components/Map/Map';
 import {MAP_DATA, POSITION} from "../components/Map/MapRenderer";
-import {close, add, locateOutline, arrowBack} from "ionicons/icons";
+import {add, locateOutline} from "ionicons/icons";
 import {QUERY} from "../utils/constants";
+import Page from "../components/Page/Page";
 interface UserDetailPageProps extends RouteComponentProps<{
     history: string;
 }> {}
@@ -96,28 +96,46 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
     }
     
     return (
-        <IonPage>
-            <div className="content">
-                <IonFab vertical="top" horizontal="start" slot="fixed">
-                    <IonFabButton routerLink={`/venues?${QUERY.SHOW_LIST}=true`}>
-                        <IonIcon icon={arrowBack} />
-                    </IonFabButton>
-                </IonFab>
-                {view.searchingForPosition !== SEARCHING_FOR_POSITION.SEARCHING && <IonFab vertical="top" horizontal="end" slot="fixed">
-                    <IonFabButton onClick={find}>
-                        <IonIcon icon={locateOutline} />
-                    </IonFabButton>
-                </IonFab>}
-                <IonToast
-                    isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS}
-                    message="Position hittad"
-                    position={'middle'}
-                    duration={200}
-                />
-                <IonLoading
-                    isOpen={view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING}
-                    message={'Söker position'}
-                />
+        <Page
+            backUrl={`/venues?${QUERY.SHOW_LIST}=true`}
+            actionBtn={{
+                isHidden: view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING,
+                icon: locateOutline,
+                onClick: find,
+                position: 'top'
+            }}
+            loader={{
+                isLoading: view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING,
+                text: 'Söker position'
+            }}
+            toast={{
+                isOpen: view.searchingForPosition === SEARCHING_FOR_POSITION.SUCCESS,
+                text: 'Position hittad'
+            }}
+            actionSheet={{
+                isOpen: view.showActionSheet,
+                onDidDismiss: () => {
+                    setView({
+                        ...view,
+                        showActionSheet: false
+                    })
+                },
+                buttons: [
+                    {
+
+                        text: 'Lägg till spår?',
+                        icon: add,
+                        handler: () => {
+                            setView({
+                                ...view,
+                                showAddView: true
+                            })
+                        }
+                    }
+                ]
+            }}
+        >
+            <>
                 <Map
                     showMap={view.searchingForPosition !== SEARCHING_FOR_POSITION.SEARCHING}
                     onClick={onDropPin}
@@ -140,39 +158,8 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                         showAddView: false
                     })}>Stäng</IonButton>
                 </IonModal>
-                <IonActionSheet
-                    isOpen={view.showActionSheet}
-                    onDidDismiss={() => {
-                        setView({
-                            ...view,
-                            showActionSheet: false
-                        })
-                    }}
-                    buttons={[{
-                        text: 'Lägg till spår?',
-                        icon: add,
-                        handler: () => {
-                            setView({
-                                ...view,
-                                showAddView: true
-                            })
-                        }
-                    }, {
-                        text: 'Stäng',
-                        icon: close,
-                        role: 'cancel',
-                        handler: () => {
-                            setView({
-                                ...view,
-                                latLng: undefined,
-                                showAddView: false
-                            })
-                        }
-                    }]}
-                >
-                </IonActionSheet>
-            </div>
-        </IonPage>
+            </>
+        </Page>
     );
 };
 

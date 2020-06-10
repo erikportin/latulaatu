@@ -1,3 +1,16 @@
+:root {
+    --safe-area: max(20px, env(safe-area-inset-top, 20px))
+    max(20px, env(safe-area-inset-right, 20px))
+    max(20px, env(safe-area-inset-bottom, 20px))
+    max(20px, env(safe-area-inset-left, 20px));
+}
+
+.page-inner{
+    max-width: 1000px;
+    margin: 0 auto;
+    height: 100%;
+}
+
 .loader{
     --background:  var(--ion-color-secondary);
     --spinner-color: var(--ion-color-tertiary);
@@ -11,19 +24,34 @@
     --button-background-selected-opacity: 0;
 }
 
-.page{
-    padding: max(20px, env(safe-area-inset-top, 20px))
-    max(20px, env(safe-area-inset-right, 20px))
-    max(20px, env(safe-area-inset-bottom, 20px))
-    max(20px, env(safe-area-inset-left, 20px));
-}
-
 .title{
     font-family: 'Fira Sans', sans-serif;
-    margin: 0 0 20px;
+    margin: 0 0 30px;
     text-transform: uppercase;
     letter-spacing: 5px;
     font-weight: 600;
-    font-size: 45px;
-    color: #e1eaea;
+    font-size: 20px;
+    color: var(--ion-color-primary);
+    background-color: var(--ion-color-secondary);
+    padding: var(--safe-area);
+    position: relative;
+}
+
+.title-inner{
+    position: relative;
+    z-index: 1;
+}
+
+.title:after{
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: -100%;
+    width: 300%;
+    height: 500%;
+    background-color: var(--ion-color-secondary);
+    transform: rotate(1deg);
+    transform-origin: bottom left;
+    z-index: 0;
 }

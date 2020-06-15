@@ -6,12 +6,12 @@ import {getVenue, addRating, VENUE} from "../utils/db";
 import {
     heartOutline,
     heartDislikeCircleOutline,
-    heartHalfOutline,
+    heartHalfOutline, caretDownCircleOutline, caretUpCircleOutline,
 } from "ionicons/icons";
 import {getSearchFromUrl} from "../utils/url";
 import {QUERY} from "../utils/constants";
 import {getRatingByDay} from "../utils/rating";
-import {pretty} from "../utils/date";
+import {isSameDay, pretty, prettyDay} from "../utils/date";
 import Page from "../components/Page/Page";
 import {List, ListItem} from "../components/Animated/Animated";
 import {PATHS} from "../App";
@@ -27,6 +27,7 @@ enum ACTIONSHEET_TYPE {
 interface VIEW {
     venue?: VENUE;
     actionSheetType?: ACTIONSHEET_TYPE | undefined;
+    currentRating?: number | undefined;
 }
 
 function getIconForRating(rating: number): string{
@@ -43,11 +44,13 @@ function getIconForRating(rating: number): string{
 
 const Venue: React.FC<PageProps> = ({ match: { params: { id: venueId } }, location: { search, pathname }}) => {
     const [view, setView] = useState<VIEW>({
+        currentRating: undefined,
         venue: undefined,
         actionSheetType: undefined
     });
 
     let prevPath = useRef(pathname);
+    const isNew = getSearchFromUrl(search)[QUERY.NEW];
 
     useLayoutEffect(() => {
         if(pathname.startsWith(PATHS.VENUE) && pathname !== prevPath.current){
@@ -65,12 +68,16 @@ const Venue: React.FC<PageProps> = ({ match: { params: { id: venueId } }, locati
     }, [pathname])
 
     useEffect(() => {
+        console.log("view", view)
+    }, [view])
+
+    useEffect(() => {
         async function fetch() {
             const venue = await getVenue(venueId);
             const searchFromUrl = getSearchFromUrl(search);
             setView({
                 actionSheetType: searchFromUrl[QUERY.RATE] ? ACTIONSHEET_TYPE.RATING : undefined,
-                venue
+                venue,
             })
         }
 
@@ -88,7 +95,9 @@ const Venue: React.FC<PageProps> = ({ match: { params: { id: venueId } }, locati
 
     return (
         <Page title={view.venue?.name}
-              backUrl={`/venues?${QUERY.SHOW_LIST}=true`}
+              backBtn={{
+                  url: `/venues?${QUERY.SHOW_LIST}=true${isNew ? `&${QUERY.NEW}=true` : ''}`
+              }}
               actionSheet={{
                   header: 'Hur var spåren idag?',
                   isOpen: view.actionSheetType === ACTIONSHEET_TYPE.RATING,
@@ -108,7 +117,7 @@ const Venue: React.FC<PageProps> = ({ match: { params: { id: venueId } }, locati
                           text: 'Okej',
                           icon: heartHalfOutline,
                           handler: () => {
-                              vote(5)
+                              vote(3)
                           }
                       },
                       {
@@ -135,10 +144,31 @@ const Venue: React.FC<PageProps> = ({ match: { params: { id: venueId } }, locati
                 <List className="ratings">
                     {getRatingByDay(view.venue.rating).map(({ rating, date }, index) =>
                         <ListItem key={index} className="rating">
-                            <span className="date">{pretty(date)}</span>
-                            <span className="score">
-                                    <IonIcon icon={getIconForRating(rating)} />
+                            <>
+                                <span className="date">
+                                    {pretty(date)}
+                                    <span className="score"><IonIcon icon={getIconForRating(rating)} /></span>
                                 </span>
+                                <button className="icon-btn" onClick={() => {
+                                    setView(view => ({
+                                        ...view,
+                                        currentRating: view.currentRating === date.getTime() ? undefined : date.getTime()
+                                    }))
+                                }}>
+                                    <IonIcon className="show-rating-btn" icon={view.currentRating === date.getTime() ? caretUpCircleOutline : caretDownCircleOutline} />
+                                </button>
+                                {view.currentRating === date.getTime() && <div className="rating-info-wrapper">
+                                    <ul className="rating-info">
+                                       {view.venue?.rating
+                                           .filter((rating) => isSameDay(rating.date, date))
+                                           .sort((rating1, rating2) => rating2.date.getTime() - rating1.date.getTime())
+                                           .map(rating => <li className="rating-info-item">
+                                               {prettyDay(rating.date)} <IonIcon icon={getIconForRating(rating.score)} />
+                                           </li>)
+                                       }
+                                    </ul>
+                                </div>}
+                            </>
                         </ListItem>
                     )}
                 </List>

@@ -27,6 +27,6 @@ export function distance(loc1: POSITION, loc2: POSITION): number {
         dist = dist * 60 * 1.1515;
         dist = dist * 1.609344;
 
-        return dist;
+        return parseFloat(dist.toFixed(0))
     }
 }

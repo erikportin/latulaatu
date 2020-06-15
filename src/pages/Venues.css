@@ -1,6 +1,10 @@
 .venues .body{
     padding: 20px;
 }
+.venues h2{
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
 .venues ul {
     padding: 0;
 }
@@ -11,9 +15,19 @@
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 20px;
-    color: #e1eaea;
+    color: var(--ion-color-secondary);
+    justify-content: space-between;
+    display: flex;
+    padding: 10px;
+    border-radius: 10px;
 }
 
 .venues li *{
-    color: #e1eaea;
+    color: var(--ion-color-secondary);
+}
+
+.venues li:hover,
+.venues li:hover *{
+    background-color: var(--ion-color-secondary);
+    color: var(--ion-color-primary);
 }

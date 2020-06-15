@@ -42,7 +42,10 @@ interface IProps {
         isOpen: boolean,
         text: string
     },
-    backUrl?: string,
+    backBtn?: {
+        url: string,
+        isHidden?: boolean
+    },
     actionBtn?: ACTION_BTN
     viewWillEnter?: () => void
     viewWillLeave?: () => void
@@ -71,7 +74,7 @@ function getActionBtnEl(actionBtn: ACTION_BTN | undefined): JSX.Element | null {
     return null;
 }
 
-const Page: React.FC<IProps> = ({ title, className, children, loader, actionSheet, toast, backUrl, actionBtn, viewWillEnter, viewWillLeave, viewDidEnter, viewDidLeave}) => {
+const Page: React.FC<IProps> = ({ title, className, children, loader, actionSheet, toast, backBtn, actionBtn, viewWillEnter, viewWillLeave, viewDidEnter, viewDidLeave}) => {
     useIonViewDidEnter(() => {
         if(viewDidEnter){
             viewDidEnter()
@@ -95,7 +98,6 @@ const Page: React.FC<IProps> = ({ title, className, children, loader, actionShee
             viewDidLeave()
         }
     });
-
 
     return (
         <IonPage className={`page ${className}`}>
@@ -136,8 +138,8 @@ const Page: React.FC<IProps> = ({ title, className, children, loader, actionShee
                 ]}
             >
             </IonActionSheet>}
-            {backUrl && <IonFab vertical="bottom" horizontal="start" slot="fixed">
-                <IonFabButton color={'secondary'} routerLink={backUrl}>
+            {backBtn && !backBtn.isHidden && <IonFab vertical="bottom" horizontal="start" slot="fixed">
+                <IonFabButton color={'secondary'} routerLink={backBtn.url}>
                     <IonIcon icon={arrowBack} />
                 </IonFabButton>
             </IonFab>}

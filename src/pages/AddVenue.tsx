@@ -14,6 +14,7 @@ import {MAP_DATA, POSITION} from "../components/Map/MapRenderer";
 import {add, locateOutline} from "ionicons/icons";
 import {QUERY} from "../utils/constants";
 import Page from "../components/Page/Page";
+import {Popup} from "../components/Popup/Popup";
 interface UserDetailPageProps extends RouteComponentProps<{
     history: string;
 }> {}
@@ -80,7 +81,7 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                 ...view,
                 showAddView: false
             });
-            history.push(`/venue/${venue.id}`);
+            history.push(`/venue/${venue.id}?${QUERY.NEW}=true`);
         }
     }
 
@@ -97,9 +98,12 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
     
     return (
         <Page
-            backUrl={`/venues?${QUERY.SHOW_LIST}=true`}
+            backBtn={{
+                url: `/venues?${QUERY.SHOW_LIST}=true`,
+                isHidden: view.showAddView
+            }}
             actionBtn={{
-                isHidden: view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING,
+                isHidden: view.showAddView || view.searchingForPosition === SEARCHING_FOR_POSITION.SEARCHING,
                 icon: locateOutline,
                 onClick: find,
                 position: 'top'
@@ -141,8 +145,9 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                     onClick={onDropPin}
                     position={view.latLng}
                 />
-                <IonModal isOpen={view.showAddView}>
-                    <IonItem>
+                <Popup isOpen={view.showAddView}>
+                    <h2>Lägg till ett nytt Skidspår</h2>
+                    <IonItem color={'light'}>
                         <IonInput
                             value={view.name}
                             placeholder="Namn"
@@ -151,13 +156,13 @@ const AddVenue: React.FC<UserDetailPageProps> = ({history}) => {
                                 name: e.detail.value!
                             })}
                             clearInput />
-                        <IonButton onClick={addNewVenue} disabled={!view.name}>Lägg till</IonButton>
                     </IonItem>
-                    <IonButton onClick={() => setView({
+                    <IonButton color={'secondary'} onClick={() => setView({
                         ...view,
                         showAddView: false
                     })}>Stäng</IonButton>
-                </IonModal>
+                    <IonButton onClick={addNewVenue} disabled={!view.name}  color={'secondary'}>Lägg till</IonButton>
+                </Popup>
             </>
         </Page>
     );

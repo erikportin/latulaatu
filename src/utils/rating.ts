@@ -26,7 +26,7 @@ export function getRatingByDay(rating: RATING[] = []):RATING_DAY[]{
             ret.push({
                 date: new Date(date),
                 numberOfRaters,
-                rating: parseFloat(rating.toFixed(3))
+                rating: parseFloat(rating.toFixed(3)),
             })
         }
     }

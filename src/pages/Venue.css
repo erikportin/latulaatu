@@ -17,14 +17,38 @@
     color: #e1eaea;
     font-size: 20px;
     padding: 0 10px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .date{
     flex-grow: 1;
+    text-align: left;
 }
 
 .score {
     width: 50px;
-    flex-grow: 0;
-    text-align: right;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.show-rating-btn{
+    color: var(--ion-color-secondary);
+}
+.rating-info-wrapper{
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px;
+    background-color: var(--ion-color-secondary);
+    color: var(--ion-color-primary);
+}
+.rating-info {
+}
+
+.rating-info-item{
+    display: flex;
+    justify-content: space-around;
 }

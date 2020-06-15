@@ -31,7 +31,7 @@
     letter-spacing: 5px;
     font-weight: 600;
     font-size: 20px;
-    color: var(--ion-color-primary);
+    color: var(--ion-color-tertiary);
     background-color: var(--ion-color-secondary);
     padding: var(--safe-area);
     position: relative;

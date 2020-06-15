@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion"
+import {motion} from "framer-motion"
 
 interface IProps {
     children: JSX.Element[] | JSX.Element;
@@ -38,7 +38,7 @@ export const List: React.FC<IProps> = ({ children, className = '' }) => {
 }
 
 
-export const ListItem: React.FC<IProps> = ({ children, className = '' }) => {
+export const ListItem: React.FC<any> = ({ children, className = '', onClick }) => {
     return <motion.li className={className} variants={item}>
                 {children}
         </motion.li>

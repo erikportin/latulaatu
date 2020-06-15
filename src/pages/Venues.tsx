@@ -58,6 +58,7 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }, location  
     });
 
     const shouldShowList = getSearchFromUrl(search)[QUERY.SHOW_LIST];
+    const hasNew = getSearchFromUrl(search)[QUERY.NEW];
 
     useEffect(() => {
         async function fetch(){
@@ -139,9 +140,19 @@ const Venues: React.FC<PageProps> = ({ history, location: { search }, location  
             <>
                 {view.venues.length > 0 &&
                 <List className={venuesListClassName}>
-                    {view.venues.map(({name, id, distance}, index) => <ListItem key={index}>
-                        <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
-                    </ListItem>)}
+                    <>
+                        <h2>Skidspår i närheten</h2>
+                        {view.nearbyVenues.map(({name, id, distance}, index) => <ListItem key={index}>
+                            <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
+                        </ListItem>)}
+                        {view.nearbyVenues.length === 0 && <p>Inga spår i närheten</p>}
+                        <h2>Flera skidspår</h2>
+                        {view.venues.slice(view.nearbyVenues.length)
+                            .map(({name, id, distance}, index) => <ListItem key={index}>
+                            <IonRouterLink routerLink={`/venue/${id}`}>{name}</IonRouterLink>
+                            <span className="distance">{distance}km</span>
+                        </ListItem>)}
+                    </>
                 </List>
                 }
             </>
